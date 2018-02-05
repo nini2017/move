@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+        } 
+    </style>
+</head>
+<body>
+    <canvas width="600" height="400"></canvas>
+<script>
+    // 构造函数
+    var PieChart = function (ctx) {
+        // 绘图上下文
+        this.ctx = ctx || document.querySelector('canvas').getContext('2d');
+        // 饼图
+        this.canvasWidth = this.ctx.canvas.width;
+        this.canvasHeight = this.ctx.canvas.height;
+        this.x0 = this.canvasWidth / 2 +70;
+        this.y0 = this.canvasHeight / 2;
+        this.radius = 150;
+        // 标题
+        this.titFont = '14px 微软雅黑';
+        this.lineOut = 20;
+        // 说明
+        this.space = 20;
+        this.descW = 30;
+        this.descH = 15;
+        this.descFont = '12px 微软雅黑';
+        this.descSpace = 10;
+    }
+    // 原型方法
+    PieChart.prototype.init = function (data) {
+        this.drawPie(data);
+    }
+
+    PieChart.prototype.drawPie = function () {
+        var that = this;
+        // 求总人数
+        var total = 0;
+        data.forEach(function (item,i) {
+            total += item.num;
+        });
+        // 绘制扇形
+        var startAngle = 0;
+        data.forEach(function (item,i) {
+            that.ctx.beginPath();
+            that.ctx.moveTo(that.x0,that.y0);
+            var angle = item.num / total * Math.PI *2;
+            var endAngle = startAngle + angle;
+            that.ctx.arc(that.x0,that.y0,that.radius,startAngle,endAngle);
+            var color = that.ctx.fillStyle = that.getRandomColor();
+            that.ctx.fill();
+            that.drawLine(startAngle, angle, color,item.title);
+            that.drawDesc(i,item.title);
+            startAngle = endAngle;
+            
+
+        })
+    }
+    // 产生随机颜色的原型方法
+    PieChart.prototype.getRandomColor = function () {
+        var r = Math.floor(Math.random() * 256);
+        var g = Math.floor(Math.random() * 256);
+        var b = Math.floor(Math.random() * 256);
+        return 'rgb('+r+','+g+','+b+')';
+    }
+    PieChart.prototype.drawLine = function (startAngle,angle,color,title) {
+        var lineAngle = startAngle + angle / 2;
+        var line = this.radius + this.lineOut;
+        var lineX = this.x0 + Math.cos(lineAngle) * line;
+        var lineY = this.y0 + Math.sin(lineAngle) * line;
+        this.ctx.moveTo(this.x0,this.y0);
+        this.ctx.lineTo(lineX,lineY);
+        this.ctx.strokeStyle = color;
+        this.ctx.font = this.titFont;     
+        var textWidth = this.ctx.measureText(title).width;
+        if(lineX>this.x0){
+            this.ctx.lineTo(lineX + textWidth , lineY);
+            this.ctx.textAlign = 'left';
+        } else {
+            this.ctx.lineTo(lineX - textWidth ,lineY );
+            this.ctx.textAlign = 'right';
+        }
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillText(title, lineX, lineY);
+        this.ctx.stroke();
+    }
+    PieChart.prototype.drawDesc = function (index,title) {
+        var rectX = this.space;
+        var rectY = this.space;
+        this.ctx.fillRect(rectX,rectY + index * (this.descSpace + this.descH),this.descW,this.descH);
+        this.ctx.font = this.descFont;
+        this.ctx.textAlign = 'left';
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillText(title, rectX + this.descW + this.descSpace, rectY + index * (this.descSpace + this.descH));
+    }
+
+    var pie = new PieChart();
+    var data = [
+        {title:'16-20岁',num:21},
+        { title: '21-25岁', num: 32 },
+        { title: '26-30岁', num: 13 },
+        { title: '31-35岁', num: 40 },
+        { title: '35岁以上', num: 6 }
+    ];
+    pie.init(data);
+</script>  
+</body>
+</html>
